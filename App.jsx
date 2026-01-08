@@ -79,6 +79,39 @@ const DataContext = createContext(null);
 
 // --- Helper Components ---
 // --- Helper Components ---
+// Basic image compression
+const compressImage = (file, maxWidth = 800, quality = 0.6) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Ensure strictly under 1MB (approx)
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 function FileUploader({ onUpload, accept = '*', className = '', children }) {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -87,33 +120,46 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert("文件大小不能超过5MB");
+      if (file.size > 10 * 1024 * 1024) {
+        alert("文件过大 (超过10MB)");
         return;
       }
+
       setIsUploading(true);
       setUploadError(null);
 
       try {
+        // Attempt 1: Firebase Storage
         const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-
-        // Add timeout to prevent hanging
         const uploadTask = uploadBytes(storageRef, file);
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Upload timed out")), 20000));
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Upload timed out")), 15000));
 
-        const snapshot = await Promise.race([uploadTask, timeoutPromise]);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        await Promise.race([uploadTask, timeoutPromise]);
+        const downloadURL = await getDownloadURL(storageRef);
         onUpload(downloadURL, file.name);
-      } catch (error) {
-        console.error("Upload failed:", error);
-        let msg = "上传失败";
-        if (error.message.includes('time')) msg = "上传超时，请检查网络";
-        else if (error.code === 'storage/unauthorized') msg = "无权限上传";
-        else if (error.code === 'storage/canceled') msg = "上传取消";
-        else msg = "上传出错: " + error.message;
 
-        setUploadError(msg);
-        alert(msg);
+      } catch (error) {
+        console.warn("Storage upload failed, trying fallback...", error);
+
+        // Attempt 2: Client-side Compression -> Base64 (Firestore)
+        try {
+          setUploadError("网络慢，尝试压缩模式...");
+          const compressedDataUrl = await compressImage(file);
+
+          if (compressedDataUrl.length > 950 * 1024) {
+            throw new Error("压缩后图片仍然过大");
+          }
+
+          onUpload(compressedDataUrl, file.name);
+          setUploadError(null);
+        } catch (backupError) {
+          console.error("Fallback failed:", backupError);
+          let msg = "上传失败";
+          if (error.message.includes('time')) msg = "网络连接超时且图片无法压缩保存";
+          else msg = "上传失败: " + backupError.message;
+          setUploadError(msg);
+          alert(msg);
+        }
       } finally {
         setIsUploading(false);
       }
@@ -141,7 +187,7 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
           </button>
-          {uploadError && <span className="text-[10px] text-red-500 absolute -bottom-4 whitespace-nowrap">{uploadError}</span>}
+          {uploadError && <span className="text-[10px] text-red-500 absolute -bottom-4 whitespace-nowrap">{uploadError.includes('压缩') ? '已转压缩模式' : '上传失败'}</span>}
         </div>
       )}
     </div>
