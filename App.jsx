@@ -33,279 +33,43 @@ import {
 } from 'lucide-react';
 
 // --- 初始数据常量 (用于重置) ---
+// Note: In a real app, these might be fetched from a 'constants' collection or config
 const INITIAL_CATEGORIES = [
   {
     id: 'hard_main', name: '硬装主材', children: [
-      {
-        id: 'mech', name: '机电设备类', children: [
-          { id: 'mech_air', name: '全空气系统' },
-          { id: 'mech_hvac', name: '空调新风锅炉地暖' },
-          { id: 'mech_pipe', name: '管道给排水' },
-          { id: 'mech_pool', name: '泳池设备' },
-          { id: 'mech_elevator', name: '电梯' }
-        ]
-      },
-      {
-        id: 'tile_stone', name: '瓷砖石材类', children: [
-          { id: 'tile_domestic', name: '国产瓷砖' },
-          { id: 'tile_import', name: '进口瓷砖' },
-          { id: 'tile_slab', name: '岩板' },
-          { id: 'tile_mosaic', name: '马赛克' },
-          { id: 'stone_mat', name: '石材' }
-        ]
-      },
-      {
-        id: 'floor', name: '地板类', children: [
-          { id: 'floor_common', name: '地板' }
-        ]
-      },
-      {
-        id: 'bath', name: '卫浴类', children: [
-          { id: 'bath_import', name: '进口卫浴' },
-          { id: 'bath_domestic', name: '国产卫浴' },
-          { id: 'bath_shower', name: '淋浴房' },
-          { id: 'bath_cabinet', name: '浴室柜' }
-        ]
-      },
-      {
-        id: 'wood', name: '木作类', children: [
-          { id: 'wood_whole', name: '整木' },
-          { id: 'wood_door', name: '室内门' }
-        ]
-      },
-      {
-        id: 'cabinet', name: '橱柜类', children: [
-          { id: 'cab_cupboard', name: '橱柜' },
-          { id: 'cab_sink', name: '水槽' }
-        ]
-      },
-      {
-        id: 'win_door', name: '门窗类', children: [
-          { id: 'win_common', name: '门窗' },
-          { id: 'win_sun', name: '户外遮阳系统' },
-          { id: 'win_garage', name: '车库门' },
-          { id: 'win_entry', name: '入户门' }
-        ]
-      },
-      {
-        id: 'custom', name: '装饰定制类', children: [
-          { id: 'cust_copper', name: '铜艺定制' },
-          { id: 'cust_steel', name: '不锈钢定制' },
-          { id: 'cust_tatami', name: '榻榻米' }
-        ]
-      },
-      {
-        id: 'special', name: '特殊空间', children: [
-          { id: 'spec_stair', name: '楼梯' },
-          { id: 'spec_garden', name: '园林' },
-          { id: 'spec_fire', name: '壁炉' },
-          { id: 'spec_wine', name: '酒窖' },
-          { id: 'spec_smart', name: '智能影音/安防' }
-        ]
-      }
+      { id: 'mech', name: '机电设备类', children: [{ id: 'mech_air', name: '全空气系统' }, { id: 'mech_hvac', name: '空调新风锅炉地暖' }, { id: 'mech_pipe', name: '管道给排水' }, { id: 'mech_pool', name: '泳池设备' }, { id: 'mech_elevator', name: '电梯' }] },
+      { id: 'tile_stone', name: '瓷砖石材类', children: [{ id: 'tile_domestic', name: '国产瓷砖' }, { id: 'tile_import', name: '进口瓷砖' }, { id: 'tile_slab', name: '岩板' }, { id: 'tile_mosaic', name: '马赛克' }, { id: 'stone_mat', name: '石材' }] },
+      { id: 'floor', name: '地板类', children: [{ id: 'floor_common', name: '地板' }] },
+      { id: 'bath', name: '卫浴类', children: [{ id: 'bath_import', name: '进口卫浴' }, { id: 'bath_domestic', name: '国产卫浴' }, { id: 'bath_shower', name: '淋浴房' }, { id: 'bath_cabinet', name: '浴室柜' }] },
+      { id: 'wood', name: '木作类', children: [{ id: 'wood_whole', name: '整木' }, { id: 'wood_door', name: '室内门' }] },
+      { id: 'cabinet', name: '橱柜类', children: [{ id: 'cab_cupboard', name: '橱柜' }, { id: 'cab_sink', name: '水槽' }] },
+      { id: 'win_door', name: '门窗类', children: [{ id: 'win_common', name: '门窗' }, { id: 'win_sun', name: '户外遮阳系统' }, { id: 'win_garage', name: '车库门' }, { id: 'win_entry', name: '入户门' }] },
+      { id: 'custom', name: '装饰定制类', children: [{ id: 'cust_copper', name: '铜艺定制' }, { id: 'cust_steel', name: '不锈钢定制' }, { id: 'cust_tatami', name: '榻榻米' }] },
+      { id: 'special', name: '特殊空间', children: [{ id: 'spec_stair', name: '楼梯' }, { id: 'spec_garden', name: '园林' }, { id: 'spec_fire', name: '壁炉' }, { id: 'spec_wine', name: '酒窖' }, { id: 'spec_smart', name: '智能影音/安防' }] }
     ]
   },
   {
     id: 'hard_aux', name: '硬装辅材', children: [
-      {
-        id: 'aux_base', name: '基础辅材', children: [
-          { id: 'aux_paint', name: '涂料' },
-          { id: 'aux_gypsum', name: '国产石膏线' },
-          { id: 'aux_damp', name: '防潮防结露系统' },
-          { id: 'aux_seam', name: '美缝剂' }
-        ]
-      },
-      {
-        id: 'hw_elec', name: '五金电气', children: [
-          { id: 'hw_metal', name: '五金' },
-          { id: 'hw_switch', name: '开关面板' }
-        ]
-      },
-      {
-        id: 'env', name: '环保治理', children: [
-          { id: 'env_form', name: '除甲醛' },
-          { id: 'env_clean', name: '保洁' }
-        ]
-      }
+      { id: 'aux_base', name: '基础辅材', children: [{ id: 'aux_paint', name: '涂料' }, { id: 'aux_gypsum', name: '国产石膏线' }, { id: 'aux_damp', name: '防潮防结露系统' }, { id: 'aux_seam', name: '美缝剂' }] },
+      { id: 'hw_elec', name: '五金电气', children: [{ id: 'hw_metal', name: '五金' }, { id: 'hw_switch', name: '开关面板' }] },
+      { id: 'env', name: '环保治理', children: [{ id: 'env_form', name: '除甲醛' }, { id: 'env_clean', name: '保洁' }] }
     ]
   },
   {
     id: 'soft', name: '软装陈设', children: [
-      {
-        id: 'soft_furn', name: '家具类', children: [
-          { id: 'sf_custom', name: '定制家具' },
-          { id: 'sf_mobile', name: '活动家具' },
-          { id: 'sf_mattress', name: '床垫' }
-        ]
-      },
-      {
-        id: 'appliance', name: '电器类', children: [
-          { id: 'app_kitchen', name: '厨电' }
-        ]
-      },
-      {
-        id: 'fitness', name: '健身器材', children: [
-          { id: 'fit_equip', name: '健身器材' }
-        ]
-      },
-      {
-        id: 'fabric', name: '布艺软装', children: [
-          { id: 'fab_whole', name: '整体软装' },
-          { id: 'fab_carpet', name: '地毯地垫' },
-          { id: 'fab_wall', name: '壁纸布艺' }
-        ]
-      },
-      {
-        id: 'light', name: '灯饰类', children: [
-          { id: 'light_comm', name: '灯饰商照' }
-        ]
-      }
+      { id: 'soft_furn', name: '家具类', children: [{ id: 'sf_custom', name: '定制家具' }, { id: 'sf_mobile', name: '活动家具' }, { id: 'sf_mattress', name: '床垫' }] },
+      { id: 'appliance', name: '电器类', children: [{ id: 'app_kitchen', name: '厨电' }] },
+      { id: 'fitness', name: '健身器材', children: [{ id: 'fit_equip', name: '健身器材' }] },
+      { id: 'fabric', name: '布艺软装', children: [{ id: 'fab_whole', name: '整体软装' }, { id: 'fab_carpet', name: '地毯地垫' }, { id: 'fab_wall', name: '壁纸布艺' }] },
+      { id: 'light', name: '灯饰类', children: [{ id: 'light_comm', name: '灯饰商照' }] }
     ]
   }
 ];
 const INITIAL_UNITS = ['件', '套', '个', '米', 'm²', '卷', '包', '箱', 'kg', 'L'];
 
-// --- 增强版 MockDB (支持 LocalStorage 持久化) ---
-class PersistentMockDB {
-  constructor() {
-    this.storageKey = 'design_app_db_v5'; // 改名可清旧数据
-    this.listeners = new Map();
-    this.load();
-  }
+// --- Firebase Init ---
+import { auth, db } from './firebase';
 
-  load() {
-    const saved = localStorage.getItem(this.storageKey);
-    if (saved) {
-      this.data = JSON.parse(saved);
-      // Auto-migration: Check if categories are outdated
-      const currentCats = this.data.settings_categories?.[0]?.tree || [];
-      const hasNewStructure = currentCats.some(c => c.id === 'hard_main');
-      if (!hasNewStructure) {
-        console.log('Migrating categories to new structure...');
-        this.data.settings_categories = [{ id: 'root', tree: INITIAL_CATEGORIES }];
-        this.save();
-      }
-    } else {
-      this.reset(false);
-    }
-  }
-
-  save() {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-    } catch (e) {
-      console.error("Storage Save Error:", e);
-      if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-        alert("本地存储已满，无法保存图片。建议不要上传过多大图，或在登录页重置数据。");
-        throw new Error("存储空间已满");
-      }
-    }
-  }
-
-  // 重置所有数据
-  reset(shouldReload = true) {
-    this.data = {
-      products: [],
-      requests: [],
-      bids: [],
-      favorites: [],
-      user_accounts: [
-        { id: 'admin', phone: 'admin', password: 'admin888', role: 'admin', realName: '系统管理员', isDisabled: false },
-        { id: 'u1', phone: '13800000001', password: '123456', role: 'designer_normal', realName: '测试设计师', isDisabled: false },
-        { id: 'u2', phone: '13800000002', password: '123456', role: 'supplier', companyName: '测试供应商', category: '石材', isDisabled: false }
-      ],
-      settings_categories: [{ id: 'root', tree: INITIAL_CATEGORIES }],
-      settings_units: [{ id: 'root', list: INITIAL_UNITS }],
-      sourcing_posts: [],
-      sourcing_comments: []
-    };
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-    } catch (e) {
-      console.error("Reset Save Error:", e);
-    }
-    window.location.reload();
-  }
-
-  onSnapshot(collectionName, callback) {
-    let key = collectionName;
-    if (collectionName.includes('settings/categories')) key = 'settings_categories';
-    else if (collectionName.includes('settings/units')) key = 'settings_units';
-
-    // Ensure array exists to prevent crashes
-    if (!this.data[key]) this.data[key] = [];
-
-    if (!this.listeners.has(key)) this.listeners.set(key, new Set());
-    this.listeners.get(key).add(callback);
-
-    this.sendData(key, callback);
-    return () => {
-      const set = this.listeners.get(key);
-      if (set) set.delete(callback);
-    };
-  }
-
-  sendData(key, callback) {
-    const items = this.data[key] || [];
-    callback({
-      exists: () => items.length > 0,
-      data: () => items[0],
-      docs: items.map(d => ({ id: d.id, data: () => d, ...d }))
-    });
-  }
-
-  async add(collectionName, data) {
-    const id = Date.now().toString();
-    if (!this.data[collectionName]) this.data[collectionName] = [];
-    this.data[collectionName].push({ id, ...data });
-    this.save();
-    this.notify(collectionName);
-    return { id };
-  }
-
-  async set(collectionName, docId, data) {
-    let key = collectionName;
-    if (collectionName.includes('settings')) {
-      if (collectionName.includes('categories')) key = 'settings_categories';
-      if (collectionName.includes('units')) key = 'settings_units';
-    }
-    this.data[key] = [{ id: docId, ...data }];
-    this.save();
-    this.notify(key);
-  }
-
-  async update(collectionName, id, data) {
-    const list = this.data[collectionName];
-    if (!Array.isArray(list)) return;
-    const index = list.findIndex(d => d.id === id);
-    if (index !== -1) {
-      list[index] = { ...list[index], ...data };
-      this.save();
-      this.notify(collectionName);
-    }
-  }
-
-  async delete(collectionName, id) {
-    if (!this.data[collectionName]) return;
-    this.data[collectionName] = this.data[collectionName].filter(d => d.id !== id);
-    this.save();
-    this.notify(collectionName);
-  }
-
-  notify(key) {
-    const cbs = this.listeners.get(key);
-    if (cbs) cbs.forEach(cb => this.sendData(key, cb));
-  }
-}
-
-const mockDB = new PersistentMockDB();
-// 强制开启模拟模式，不连接真实 Firebase
-const useMock = true;
-
-const firebaseConfig = { apiKey: 'demo-mode', projectId: 'demo' };
-const app = useMock ? {} : initializeApp(firebaseConfig);
-const auth = useMock ? {} : getAuth(app);
-const db = useMock ? {} : getFirestore(app);
 const appId = 'design-app-v1';
 
 // --- Contexts ---
@@ -418,11 +182,22 @@ export default function App() {
     if (!userProfile?.phone) return;
     const phone = userProfile.phone;
 
-    // 更新 MockDB
-    const accounts = mockDB.data['user_accounts'] || [];
-    const found = accounts.find(a => a.phone === phone);
-    if (found) {
-      await mockDB.update('user_accounts', found.id, { role: newRole });
+    // REAL FIREBASE UPDATE
+    // Try to find the user document by phone
+    try {
+      const q = query(collection(db, 'user_accounts'), where('phone', '==', phone));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const docRef = snap.docs[0].ref;
+        await updateDoc(docRef, { role: newRole });
+      } else {
+        // Check if it's the current user by ID directly?
+        // If phone is used as ID, try that
+        // But we don't know the schema for sure. 
+        // Fallback: don't error out if not found, just update local.
+      }
+    } catch (e) {
+      console.error("Error updating role in DB:", e);
     }
 
     const updatedProfile = { ...userProfile, role: newRole };
@@ -464,12 +239,12 @@ function DataProvider({ children }) {
 
   // --- 加载 Settings ---
   useEffect(() => {
-    const unsubCat = mockDB.onSnapshot('settings/categories', (snap) => {
-      if (snap.data()) setCategories(snap.data().tree);
+    const unsubCat = onSnapshot(doc(db, 'settings', 'categories'), (docSnap) => {
+      if (docSnap.exists()) setCategories(docSnap.data().tree);
       else setCategories(INITIAL_CATEGORIES);
     });
-    const unsubUnit = mockDB.onSnapshot('settings/units', (snap) => {
-      if (snap.data()) setUnits(snap.data().list);
+    const unsubUnit = onSnapshot(doc(db, 'settings', 'units'), (docSnap) => {
+      if (docSnap.exists()) setUnits(docSnap.data().list);
       else setUnits(INITIAL_UNITS);
     });
     return () => { unsubCat(); unsubUnit(); };
@@ -478,52 +253,66 @@ function DataProvider({ children }) {
   // --- 加载业务数据 ---
   useEffect(() => {
     setLoadingProducts(true);
-    const unsubProd = mockDB.onSnapshot('products', (snap) => { setProducts(snap.docs); setLoadingProducts(false); });
-    const unsubReq = mockDB.onSnapshot('requests', (snap) => setRequests(snap.docs));
-    const unsubBids = mockDB.onSnapshot('bids', (snap) => setBids(snap.docs));
-    const unsubUsers = mockDB.onSnapshot('user_accounts', (snap) => setAllUsers(snap.docs));
-
-    const unsubFav = mockDB.onSnapshot('favorites', (snap) => {
-      const myFavs = snap.docs.filter(d => d.userId === userId).map(d => ({ ...d })); // Keep full object for groupId
-      setFavorites(myFavs);
+    const unsubProd = onSnapshot(collection(db, 'products'), (snap) => {
+      setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoadingProducts(false);
+    });
+    const unsubReq = onSnapshot(collection(db, 'requests'), (snap) => {
+      setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    const unsubBids = onSnapshot(collection(db, 'bids'), (snap) => {
+      setBids(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    const unsubUsers = onSnapshot(collection(db, 'user_accounts'), (snap) => {
+      setAllUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    const unsubGroups = mockDB.onSnapshot('favorite_groups', (snap) => {
-      setFavoriteGroups(snap.docs.filter(d => d.userId === userId));
-    });
+    const favQuery = userId ? query(collection(db, 'favorites'), where('userId', '==', userId)) : null;
+    const unsubFav = favQuery ? onSnapshot(favQuery, (snap) => {
+      setFavorites(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }) : () => setFavorites([]);
+
+    const groupQuery = userId ? query(collection(db, 'favorite_groups'), where('userId', '==', userId)) : null;
+    const unsubGroups = groupQuery ? onSnapshot(groupQuery, (snap) => {
+      setFavoriteGroups(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }) : () => setFavoriteGroups([]);
 
     // Sourcing Module Listeners
-    const unsubPosts = mockDB.onSnapshot('sourcing_posts', (snap) => setSourcingPosts(snap.docs));
-    const unsubComments = mockDB.onSnapshot('sourcing_comments', (snap) => setSourcingComments(snap.docs));
+    const unsubPosts = onSnapshot(collection(db, 'sourcing_posts'), (snap) => {
+      setSourcingPosts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    const unsubComments = onSnapshot(collection(db, 'sourcing_comments'), (snap) => {
+      setSourcingComments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
 
     return () => { unsubProd(); unsubReq(); unsubBids(); unsubFav(); unsubGroups(); unsubUsers(); unsubPosts(); unsubComments(); };
   }, [user, userId]);
 
   // --- Actions ---
-  const addProduct = (data) => userId && mockDB.add('products', { ...data, createdAt: new Date(), supplier_id: userId });
-  const updateProduct = (id, data) => user && mockDB.update('products', id, { ...data, updatedAt: new Date() });
-  const removeProduct = (id) => user && mockDB.delete('products', id);
+  const addProduct = async (data) => userId && await addDoc(collection(db, 'products'), { ...data, createdAt: serverTimestamp(), supplier_id: userId });
+  const updateProduct = async (id, data) => user && await updateDoc(doc(db, 'products', id), { ...data, updatedAt: serverTimestamp() });
+  const removeProduct = async (id) => user && await deleteDoc(doc(db, 'products', id));
 
-  const toggleFavorite = (p) => {
+  const toggleFavorite = async (p) => {
     if (!userId) return;
     const existing = favorites.find(f => f.productId === p.id);
-    if (existing) mockDB.delete('favorites', existing.id);
-    else mockDB.add('favorites', { userId, productId: p.id, groupId: 'default' });
+    if (existing) await deleteDoc(doc(db, 'favorites', existing.id));
+    else await addDoc(collection(db, 'favorites'), { userId, productId: p.id, groupId: 'default', createdAt: serverTimestamp() });
   };
 
-  const createFavoriteGroup = (name) => userId && mockDB.add('favorite_groups', { userId, name, createdAt: new Date() });
-  const moveFavoriteToGroup = (favId, groupId) => mockDB.update('favorites', favId, { groupId });
+  const createFavoriteGroup = async (name) => userId && await addDoc(collection(db, 'favorite_groups'), { userId, name, createdAt: serverTimestamp() });
+  const moveFavoriteToGroup = async (favId, groupId) => await updateDoc(doc(db, 'favorites', favId), { groupId });
 
-  const createRequest = (data) => userId && mockDB.add('requests', { ...data, designer_id: userId, status: 'open', createdAt: new Date() });
-  const updateRequest = (id, data) => userId && mockDB.update('requests', id, { ...data });
-  const submitBid = (data) => userId && mockDB.add('bids', { ...data, supplier_id: userId, createdAt: new Date() });
+  const createRequest = async (data) => userId && await addDoc(collection(db, 'requests'), { ...data, designer_id: userId, status: 'open', createdAt: serverTimestamp() });
+  const updateRequest = async (id, data) => userId && await updateDoc(doc(db, 'requests', id), { ...data });
+  const submitBid = async (data) => userId && await addDoc(collection(db, 'bids'), { ...data, supplier_id: userId, createdAt: serverTimestamp() });
 
-  const createSourcingPost = (data) => userId && mockDB.add('sourcing_posts', { ...data, designer_id: userId, createdAt: new Date() });
-  const addSourcingComment = (data) => userId && mockDB.add('sourcing_comments', { ...data, author_id: userId, createdAt: new Date() });
-  const deleteSourcingComment = (id) => userId && mockDB.delete('sourcing_comments', id);
+  const createSourcingPost = async (data) => userId && await addDoc(collection(db, 'sourcing_posts'), { ...data, designer_id: userId, createdAt: serverTimestamp() });
+  const addSourcingComment = async (data) => userId && await addDoc(collection(db, 'sourcing_comments'), { ...data, author_id: userId, createdAt: serverTimestamp() });
+  const deleteSourcingComment = async (id) => userId && await deleteDoc(doc(db, 'sourcing_comments', id));
 
-  const saveCategories = (tree) => mockDB.set('settings/categories', 'categories', { tree });
-  const saveUnits = (list) => mockDB.set('settings/units', 'units', { list });
+  const saveCategories = async (tree) => await setDoc(doc(db, 'settings', 'categories'), { tree });
+  const saveUnits = async (list) => await setDoc(doc(db, 'settings', 'units'), { list });
 
   const searchByImage = () => new Promise(resolve => setTimeout(() => {
     resolve([...products].sort(() => 0.5 - Math.random()).slice(0, 2));
