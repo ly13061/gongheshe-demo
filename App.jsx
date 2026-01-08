@@ -22,6 +22,7 @@ import {
   orderBy,
   getDocs
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
   Layout, Search, Filter, Plus, Trash2, LogOut, User, Crown, Store, Tag,
   Image as ImageIcon, CheckCircle, Loader2, Menu, X, ArrowRight, ShieldCheck,
@@ -68,7 +69,7 @@ const INITIAL_CATEGORIES = [
 const INITIAL_UNITS = ['件', '套', '个', '米', 'm²', '卷', '包', '箱', 'kg', 'L'];
 
 // --- Firebase Init ---
-import { auth, db } from './firebase';
+import { auth, db, storage } from './firebase';
 
 const appId = 'design-app-v1';
 
@@ -82,16 +83,25 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert("文件大小不能超过5MB");
+        return;
+      }
       setIsUploading(true);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpload(reader.result, file.name); // Use Base64
+      try {
+        const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        onUpload(downloadURL, file.name);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        alert("上传失败，请查看控制台或检查Firebase Storage规则");
+      } finally {
         setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+      }
     }
   };
 
