@@ -144,19 +144,35 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
         // Attempt 2: Client-side Compression -> Base64 (Firestore)
         try {
           setUploadError("网络慢，尝试压缩模式...");
-          const compressedDataUrl = await compressImage(file);
 
-          if (compressedDataUrl.length > 950 * 1024) {
-            throw new Error("压缩后图片仍然过大");
+          let validBase64 = null;
+
+          if (file.type.startsWith('image/')) {
+            // Images: Compress
+            const compressed = await compressImage(file);
+            if (compressed.length < 950 * 1024) validBase64 = compressed;
+          } else {
+            // Documents: Try raw base64 if small (< 1MB)
+            if (file.size < 950 * 1024) {
+              validBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+              });
+            }
           }
 
-          onUpload(compressedDataUrl, file.name);
-          setUploadError(null);
+          if (validBase64) {
+            onUpload(validBase64, file.name);
+            setUploadError(null);
+          } else {
+            throw new Error("文件过大且网络不畅，无法保存");
+          }
         } catch (backupError) {
           console.error("Fallback failed:", backupError);
           let msg = "上传失败";
-          if (error.message.includes('time')) msg = "网络连接超时且图片无法压缩保存 (V3)";
-          else msg = "上传失败 (V3): " + backupError.message;
+          if (error.message.includes('time')) msg = "网络超时，且文件过大无法离线保存 (V4)";
+          else msg = "上传失败 (V4): " + backupError.message;
           setUploadError(msg);
           alert(msg);
         }
@@ -187,7 +203,7 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
           </button>
-          {uploadError && <span className="text-[10px] text-red-500 absolute -bottom-4 whitespace-nowrap">{uploadError.includes('压缩') ? '已转压缩模式' : '上传失败'}</span>}
+          {uploadError && <span className="text-[10px] text-red-500 absolute -bottom-4 whitespace-nowrap">{uploadError.includes('压缩') ? '已转离线模式' : '上传失败'}</span>}
         </div>
       )}
     </div>
