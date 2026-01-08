@@ -483,7 +483,7 @@ function MainLayout() {
             <div className="hidden md:flex items-center space-x-2">
               {role === 'admin' ? (
                 <NavItem view="admin_dashboard" label="系统维护" icon={<Settings className="w-4 h-4" />} />
-              ) : (
+              ) : role !== 'guest' ? (
                 <>
                   {role !== 'supplier' && <NavItem view="market" label="选材大厅" />}
                   <NavItem view="sourcing_hall" label="寻品大厅" />
@@ -500,7 +500,7 @@ function MainLayout() {
                     </>
                   )}
                 </>
-              )}
+              ) : null}
 
               <div className="h-6 w-px bg-gray-300 mx-4"></div>
 
