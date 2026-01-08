@@ -480,7 +480,7 @@ function MainLayout() {
     else if (role === 'supplier') {
       if (currentView === 'home' || currentView === 'market') setCurrentView('dashboard');
     }
-    else if (role.startsWith('designer') && currentView === 'home') setCurrentView('market');
+    // else if (role.startsWith('designer') && currentView === 'home') setCurrentView('market');
   }, [role]); // eslint-disable-line
 
   const NavItem = ({ view, label, icon }) => (
