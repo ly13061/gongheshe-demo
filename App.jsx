@@ -244,9 +244,35 @@ function SimpleModal({ title, children, onClose, onConfirm, confirmText = 'чбохо
 export default function App() {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState('guest');
+  const [internalView, setInternalView] = useState('home'); // Renamed for hash routing
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Hash routing for Swipe Back support
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // remove #
+      if (hash) {
+        setInternalView(hash);
+      } else {
+        setInternalView('home');
+      }
+    };
+
+    // Initialize from hash
+    handleHashChange();
+
+    // Listen for back/swipes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Sync state wrapper
+  const currentView = internalView;
+  const setCurrentView = (view) => {
+    window.location.hash = view;
+  };
 
   useEffect(() => {
     const lastUser = localStorage.getItem('last_user_role');
