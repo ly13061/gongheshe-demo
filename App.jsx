@@ -1031,6 +1031,15 @@ function RFPManager({ role }) {
 
                 <p className="text-sm text-gray-600 mb-6 line-clamp-2">{req.description}</p>
 
+                {/* Display Reference Images */}
+                {req.images && req.images.length > 0 && (
+                  <div className="flex gap-2 mb-4">
+                    {req.images.map((img, i) => (
+                      <img key={i} src={img} onClick={() => window.open(img, '_blank')} className="w-20 h-20 rounded-lg object-cover bg-gray-100 border border-gray-100 cursor-zoom-in hover:shadow-md transition-shadow" />
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex gap-3">
                   {req.attachment_url && (
                     <button onClick={() => window.open(req.attachment_url, '_blank')} className="flex items-center px-4 py-2 border border-gray-200 rounded-full text-sm font-bold text-gray-700 hover:bg-gray-50"><FileDigit className="w-4 h-4 mr-2" /> 图纸</button>
