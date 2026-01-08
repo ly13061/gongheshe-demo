@@ -1042,7 +1042,18 @@ function RFPManager({ role }) {
 
                 <div className="flex gap-3">
                   {req.attachment_url && (
-                    <button onClick={() => window.open(req.attachment_url, '_blank')} className="flex items-center px-4 py-2 border border-gray-200 rounded-full text-sm font-bold text-gray-700 hover:bg-gray-50"><FileDigit className="w-4 h-4 mr-2" /> 图纸</button>
+                    <button onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = req.attachment_url;
+                      link.download = `tender_document_${req.id}`;
+                      // For data URLs, this triggers download. For regular URLs, it tries.
+                      // If it's a cross-origin URL, 'download' might be ignored, behaving like a link.
+                      // But we can try targeting _blank for fallback.
+                      link.target = "_blank";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }} className="flex items-center px-4 py-2 border border-gray-200 rounded-full text-sm font-bold text-gray-700 hover:bg-gray-50"><FileDigit className="w-4 h-4 mr-2" /> 招标文件</button>
                   )}
 
                   {role === 'supplier' && (
