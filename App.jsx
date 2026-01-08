@@ -1577,11 +1577,11 @@ function ProductCard({ product, isFavorite, favoriteEntry, favoriteGroups, onMov
 // --- Admin ---
 function AdminDashboard() {
   const { categories, units, saveCategories, saveUnits } = useContext(DataContext);
-  const { userProfile } = useContext(AuthContext);
+  const { userProfile, user } = useContext(AuthContext); // Added user
 
   const adminPhone = userProfile?.phone || 'admin';
 
-  const [activeTab, setActiveTab] = useState('audit'); // Default to audit if needed, or check logic
+  const [activeTab, setActiveTab] = useState('audit');
   const [showAddCatModal, setShowAddCatModal] = useState(false);
   const [showDelCatModal, setShowDelCatModal] = useState(false);
   const [showDelUnitModal, setShowDelUnitModal] = useState(false);
@@ -1603,8 +1603,10 @@ function AdminDashboard() {
   const pendingUsers = users.filter(u => u.status === 'pending');
 
   useEffect(() => {
-    const unsubUsers = mockDB.onSnapshot('user_accounts', (snap) => {
-      const list = (snap.docs || []).slice().sort((a, b) => (a.phone || '').localeCompare(b.phone || ''));
+    // REAL FIRESTORE LISTEN
+    const q = query(collection(db, 'user_accounts'), orderBy('createdAt', 'desc'));
+    const unsubUsers = onSnapshot(q, (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setUsers(list);
     });
     return () => unsubUsers();
@@ -1710,9 +1712,9 @@ function AdminDashboard() {
         patch.role = editingUser.role;
         patch.isDisabled = false;
       }
-      await mockDB.update('user_accounts', editingUser.id, patch);
+      await updateDoc(doc(db, 'user_accounts', editingUser.id), patch);
     } else {
-      await mockDB.add('user_accounts', { ...userForm, createdAt: new Date() });
+      await addDoc(collection(db, 'user_accounts'), { ...userForm, createdAt: serverTimestamp(), status: 'active' });
     }
 
     setShowUserEditor(false);
@@ -1726,39 +1728,22 @@ function AdminDashboard() {
   const confirmDeleteUser = async () => {
     if (!editingUser) return;
     if (isSelf(editingUser.phone)) return;
-    await mockDB.delete('user_accounts', editingUser.id);
+    await deleteDoc(doc(db, 'user_accounts', editingUser.id));
     setShowDelUserModal(false);
     setEditingUser(null);
   };
 
   const approveUser = async (u) => {
-    await mockDB.update('user_accounts', u.id, { status: 'active', isDisabled: false });
+    await updateDoc(doc(db, 'user_accounts', u.id), { status: 'active', isDisabled: false });
   };
 
   const rejectUser = async (u) => {
     if (confirm('确定要拒绝并删除该申请吗？')) {
-      await mockDB.delete('user_accounts', u.id);
+      await deleteDoc(doc(db, 'user_accounts', u.id));
     }
   };
 
-  const getFilteredUsers = () => {
-    let res = users.filter(u => u.status !== 'pending'); // List tab only shows active/disabled, not pending
-    if (userFilter !== 'all') {
-      if (userFilter === 'admin') res = res.filter(u => u.role === 'admin');
-      else if (userFilter === 'supplier') res = res.filter(u => u.role === 'supplier');
-      else if (userFilter === 'designer') res = res.filter(u => u.role.startsWith('designer'));
-    }
-    if (userSearch) {
-      const lower = userSearch.toLowerCase();
-      res = res.filter(u =>
-        (u.phone || '').toLowerCase().includes(lower) ||
-        (u.realName || '').toLowerCase().includes(lower) ||
-        (u.companyName || '').toLowerCase().includes(lower)
-      );
-    }
-    return res;
-  };
-
+  // Helper for rendering (Role Label, Filtering) - unchanged
   const roleLabel = (r) => {
     if (r === 'admin') return '管理员';
     if (r === 'designer_vip') return '设计师VIP';
