@@ -2535,27 +2535,38 @@ function AuthModal({ onClose, onLogin }) {
 
     setIsSubmitting(true);
 
-    const userCheck = await checkUserExists(formData.phone);
-    if (userCheck.exists) { setErrorMsg('该手机号已注册'); setIsSubmitting(false); return; }
+    try {
+      const userCheck = await checkUserExists(formData.phone);
+      if (userCheck.exists) { setErrorMsg('该手机号已注册'); setIsSubmitting(false); return; }
 
-    const newUserData = {
-      phone: formData.phone,
-      password: formData.password,
-      role,
-      realName: formData.realName || '',
-      companyName: formData.companyName || '',
-      category: formData.selectedCategory || '',
-      isDisabled: true, // 需审核
-      status: 'pending',
-      wechatId: formData.wechatId,
-      qrCode: formData.qrCode,
-      createdAt: new Date()
-    };
+      const newUserData = {
+        phone: formData.phone,
+        password: formData.password,
+        role,
+        realName: formData.realName || '',
+        companyName: formData.companyName || '',
+        category: formData.selectedCategory || '',
+        isDisabled: true, // 需审核
+        status: 'pending',
+        wechatId: formData.wechatId || '',
+        qrCode: formData.qrCode || '',
+        createdAt: new Date() // Use client date for preview, serverTimestamp for DB
+      };
 
-    await addDoc(collection(db, 'user_accounts'), { ...newUserData, createdAt: serverTimestamp() });
-    alert('注册成功！请等待管理员审核通过。');
-    onClose();
-    setIsSubmitting(false);
+      await addDoc(collection(db, 'user_accounts'), { ...newUserData, createdAt: serverTimestamp() });
+      alert('注册成功！请等待管理员审核通过。');
+      onClose();
+    } catch (e) {
+      console.error("Registration Error:", e);
+      // Translate common Firebase errors
+      if (e.code === 'permission-denied') {
+        setErrorMsg('注册失败：没有权限写入数据库。请检查Firebase规则。');
+      } else {
+        setErrorMsg('注册失败：' + (e.message || '未知错误'));
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const { seedData } = useContext(DataContext);
