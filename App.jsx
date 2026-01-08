@@ -264,6 +264,7 @@ export default function App() {
     setRole('guest');
     setUserProfile(null);
     setUser(null);
+    setCurrentView('home'); // Redirect to home to avoid residual page
     localStorage.removeItem('last_user_role');
   };
 
