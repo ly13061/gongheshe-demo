@@ -82,6 +82,7 @@ const DataContext = createContext(null);
 function FileUploader({ onUpload, accept = '*', className = '', children }) {
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -91,14 +92,28 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
         return;
       }
       setIsUploading(true);
+      setUploadError(null);
+
       try {
         const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
+
+        // Add timeout to prevent hanging
+        const uploadTask = uploadBytes(storageRef, file);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Upload timed out")), 20000));
+
+        const snapshot = await Promise.race([uploadTask, timeoutPromise]);
         const downloadURL = await getDownloadURL(snapshot.ref);
         onUpload(downloadURL, file.name);
       } catch (error) {
         console.error("Upload failed:", error);
-        alert("上传失败，请查看控制台或检查Firebase Storage规则");
+        let msg = "上传失败";
+        if (error.message.includes('time')) msg = "上传超时，请检查网络";
+        else if (error.code === 'storage/unauthorized') msg = "无权限上传";
+        else if (error.code === 'storage/canceled') msg = "上传取消";
+        else msg = "上传出错: " + error.message;
+
+        setUploadError(msg);
+        alert(msg);
       } finally {
         setIsUploading(false);
       }
@@ -117,14 +132,17 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
       {children ? (
         children
       ) : (
-        <button
-          type="button"
-          disabled={isUploading}
-          className="p-2 text-gray-400 hover:text-[#0058a3] hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50"
-          title="上传本地文件"
-        >
-          {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
-        </button>
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            disabled={isUploading}
+            className={`p-2 rounded-full transition-colors disabled:opacity-50 ${uploadError ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-[#0058a3] hover:bg-blue-50'}`}
+            title="上传本地文件"
+          >
+            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
+          </button>
+          {uploadError && <span className="text-[10px] text-red-500 absolute -bottom-4 whitespace-nowrap">{uploadError}</span>}
+        </div>
       )}
     </div>
   );
