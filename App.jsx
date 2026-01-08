@@ -1046,13 +1046,12 @@ function CreateRFPForm({ onClose, onSubmit }) {
 
   useEffect(() => {
     // Load suppliers for invitation
-    const run = async () => {
-      // Simple fetch from mockDB for now
-      mockDB.onSnapshot('user_accounts', (snap) => {
-        setSuppliers(snap.docs.filter(u => u.role === 'supplier' && !u.isDisabled && u.status === 'active'));
-      });
-    };
-    run();
+    // Simple fetch from Firestore
+    const q = query(collection(db, 'user_accounts'), where('role', '==', 'supplier'));
+    const unsub = onSnapshot(q, (snap) => {
+      setSuppliers(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => !u.isDisabled && u.status === 'active'));
+    });
+    return () => unsub();
   }, []);
 
   const flattenCategories = (nodes, level = 0) => {
@@ -2473,9 +2472,11 @@ function AuthModal({ onClose, onLogin }) {
   };
 
   const checkUserExists = async (phone) => {
-    const mockUsers = mockDB.data['user_accounts'] || [];
-    const user = mockUsers.find(u => u.phone === phone);
-    if (user) return { exists: true, data: user };
+    const q = query(collection(db, 'user_accounts'), where('phone', '==', phone));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return { exists: true, data: { id: snap.docs[0].id, ...snap.docs[0].data() } };
+    }
     return { exists: false };
   };
 
@@ -2533,15 +2534,19 @@ function AuthModal({ onClose, onLogin }) {
       createdAt: new Date()
     };
 
-    await mockDB.add('user_accounts', newUserData);
+    await addDoc(collection(db, 'user_accounts'), { ...newUserData, createdAt: serverTimestamp() });
     alert('注册成功！请等待管理员审核通过。');
     onClose();
     setIsSubmitting(false);
   };
 
-  const handleResetData = () => {
-    if (confirm('确定要重置所有测试数据吗？（商品、分类、注册用户都将恢复默认）')) {
-      mockDB.reset(true);
+  const { seedData } = useContext(DataContext);
+  const handleResetData = async () => {
+    if (confirm('确定要重置所有测试数据吗？（这将在数据库中写入演示数据）')) {
+      // Call global seedData
+      await seedData('products');
+      await seedData('requests');
+      alert('演示数据已写入');
     }
   };
 
