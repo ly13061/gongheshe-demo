@@ -155,8 +155,8 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
         } catch (backupError) {
           console.error("Fallback failed:", backupError);
           let msg = "上传失败";
-          if (error.message.includes('time')) msg = "网络连接超时且图片无法压缩保存";
-          else msg = "上传失败: " + backupError.message;
+          if (error.message.includes('time')) msg = "网络连接超时且图片无法压缩保存 (V3)";
+          else msg = "上传失败 (V3): " + backupError.message;
           setUploadError(msg);
           alert(msg);
         }
