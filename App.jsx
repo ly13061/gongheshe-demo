@@ -1098,6 +1098,19 @@ function RFPManager({ role }) {
                                 <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded">已认证</span>
                               </div>
                               <p className="text-sm text-gray-600 line-clamp-2 max-w-xl">{bid.tech_specs}</p>
+                              {bid.image_url && (
+                                <button onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = bid.image_url;
+                                  link.download = `bid_attachment_${bid.id}`;
+                                  link.target = "_blank";
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }} className="mt-2 text-[#0058a3] text-xs font-bold hover:underline flex items-center">
+                                  <FileText className="w-3 h-3 mr-1" /> 下载附件 / 方案
+                                </button>
+                              )}
                             </div>
                             <div className="flex items-center gap-4">
                               <div className="text-right">
