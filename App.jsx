@@ -1753,7 +1753,25 @@ function AdminDashboard() {
     }
   };
 
-  // Helper for rendering (Role Label, Filtering) - unchanged
+  // Helper for rendering (Role Label, Filtering)
+  const getFilteredUsers = () => {
+    let res = users.filter(u => u.status !== 'pending'); // List tab only shows active/disabled, not pending
+    if (userFilter !== 'all') {
+      if (userFilter === 'admin') res = res.filter(u => u.role === 'admin');
+      else if (userFilter === 'supplier') res = res.filter(u => u.role === 'supplier');
+      else if (userFilter === 'designer') res = res.filter(u => u.role.startsWith('designer'));
+    }
+    if (userSearch) {
+      const lower = userSearch.toLowerCase();
+      res = res.filter(u =>
+        (u.phone || '').toLowerCase().includes(lower) ||
+        (u.realName || '').toLowerCase().includes(lower) ||
+        (u.companyName || '').toLowerCase().includes(lower)
+      );
+    }
+    return res;
+  };
+
   const roleLabel = (r) => {
     if (r === 'admin') return '管理员';
     if (r === 'designer_vip') return '设计师VIP';
