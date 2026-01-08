@@ -192,7 +192,14 @@ function FileUploader({ onUpload, accept = '*', className = '', children }) {
     <div onClick={handleClick} className={`relative flex items-center cursor-pointer ${className}`}>
       <input type="file" ref={fileInputRef} className="hidden" accept={accept} onChange={handleFileChange} />
       {children ? (
-        children
+        <>
+          {children}
+          {isUploading && (
+            <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
+              <Loader2 className="w-6 h-6 animate-spin text-[#0058a3]" />
+            </div>
+          )}
+        </>
       ) : (
         <div className="flex flex-col items-center">
           <button
