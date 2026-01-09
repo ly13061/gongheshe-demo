@@ -711,7 +711,7 @@ function MainLayout() {
 function HomeView({ onExplore }) {
   return (
     <div className="text-center py-20">
-      <h1 className="text-5xl md:text-7xl font-black text-[#111] mb-6">共合设<br />设计师工作平台</h1>
+      <h1 className="text-5xl md:text-7xl font-black text-[#111] mb-6">设计自由<br />思想独立</h1>
       <button onClick={onExplore} className="px-10 py-4 bg-[#0058a3] text-white font-bold rounded-full shadow-lg hover:bg-[#004f93] transition-colors">立即探索</button>
     </div>
   );
